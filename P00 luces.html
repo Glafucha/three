@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Practica 1</title>
+        <style>
+          body {
+              margin: 0;
+              overflow: hidden;
+          }
+        </style>
+    </head>
+    <body>
+      <canvas id="mycanvas"></canvas> 
+        <script type="importmap">
+            {
+              "imports": {
+                "three": "https://cdn.skypack.dev/-/three@v0.137.5-HJEdoVYPhjkiJWkt6XIa/dist=es2019,mode=raw/build/three.module.js",
+                "three/OrbitControls": "https://cdn.skypack.dev/-/three@v0.137.5-HJEdoVYPhjkiJWkt6XIa/dist=es2019,mode=raw/examples/jsm/controls/OrbitControls.js"
+              }
+            }
+        </script>
+          <div>
+        <script type="module">
+        
+        import * as THREE from 'three';
+        import {OrbitControls} from 'three/OrbitControls';///////////////////
+        
+        //Inicio y configuraciones generales
+        var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('mycanvas'), antialias: true});
+
+        // Tamaño y configuración de la pantalla
+        renderer.setClearColor(0xabebc6)
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Opciones de camara
+        var camera = new THREE.PerspectiveCamera(50, window.innerWidth / (window.innerHeight), 0.1, 50);
+        camera.position.set(0, 0, 10);
+        
+
+        // Se crea la escena
+        var scene =new THREE.Scene();
+        var controls = new OrbitControls(camera, renderer.domElement);///////////
+
+        const gridHelper = new THREE.GridHelper( 50, 10 );//tamaño, segmentos
+        scene.add( gridHelper );
+        const axesHelper = new THREE.AxesHelper( 50 );
+        scene.add( axesHelper );
+
+      // Luces
+        var light = new THREE.AmbientLight(0xffffff, 0.2);
+        var light1 = new THREE.PointLight(0xff0000, 1);
+        var light2 = new THREE.PointLight(0x00ff00, 1);
+        light1.position.set(5,4,0);
+        light2.position.set(-5,4,0);
+        
+        // Se añaden las luces a la escena
+         scene.add(light);
+         scene.add(light1, light2);
+
+
+        // Geometrias
+        var geometry = new THREE.SphereGeometry(1,5,5);
+        var material = new THREE.MeshLambertMaterial({color: 0x0FFFF00,
+        transparent: true, opacity: 1});
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(0, 0, 0);
+
+        //se añaden las geometrias a la escena
+        scene.add(mesh);
+
+
+
+var intensidad = .5;  // permite que la luz se maneje a diferentes intensidades de brillo, es recomendable no colocar intensidades en negativo
+                    // pues en lugar de brillar absorbe la luz
+var reloj = new THREE.Clock(); // variable con la que registramos/medimos el tiempo que pasa durante la ejecución en el navegador (tiempo entre fotogramas) 
+                              // necesario para animaciones
+var velocidadluz = 5;  //Cambia la velocidad a la que "parpadean" las luces
+
+/////////////////////////////////////////////////////////// Se declara la function que contiene las instrucciones
+function luces(){
+  //estos dos ejemplos son utilizando el seno y el coseno, si ambos son senos o cosenos, una de las dos intensidades que se multiplican debe quedar en negativo, si 
+  // se utiliza en una coseno y en la otra seno el parpadeo no esta sincconizado y puede dar un efecto diferente
+
+  //light1.intensity = (Math.cos(reloj.getElapsedTime()*velocidadluz)*intensidad)+intensidad; // Ejemplo 1, sincronizado
+  //light2.intensity = (Math.cos(reloj.getElapsedTime()*velocidadluz)*-intensidad)+intensidad;
+  
+  light1.intensity = (Math.cos(reloj.getElapsedTime()*velocidadluz)*intensidad)+intensidad; // Ejemplo 2, desincronizado
+  light2.intensity = (Math.sin(reloj.getElapsedTime()*velocidadluz)*intensidad)+intensidad;
+
+  //Tomamos la intensidad de la luz, pero podemos tomar otros parametros como el opacity/transparency de un material, o la escala de un objeto
+  // luego usamos un coseno o un seno, para realizar una operación matematica que pase de multiplicar 1 y -1 por la velocidad de muestra luz,
+  // multiplicamos por la intensidad, y al final sumamos de nuevo la intensidad para evitar que quede en valores negativos, es decir, la intensidad de la
+  // luz va a multiplciarse por el coseno, dando .5, -.5, .5, -.5, y así hasta que lo detengamos, pero la intensidad quedaria en valor negativo, por este motivo
+  // si lo sumamos por la misma intensidad, el resultado sería 1, 0, 1, 0, 1, 0, o lo que es lo mismo: .5+.5, -.5+.5, .5+.5, -.5+.5
+}
+
+
+
+        requestAnimationFrame(render);
+
+        function render (){
+          luces(); ///////////////////////////////// importante, al final llamar a nuestra function, pues si no lo hacemos las luces no parpadean, cuando vean
+          // interacciones pueden hacer que se active con alguna interacción especifica
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+
+        }
+
+        </script>
+        </div>
+    </body>
+</html>
